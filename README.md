@@ -9,15 +9,12 @@ Features
 
 - Build for multiple devices/multiple version.
 - Generate reproduceable images with the same configuration.
-- Template configurations so they can be used on multiple routers with slightly
-  different settings.
-- Intelligent building of new openwrt images based on if anything has changed
-  or not.
 
 Requirements
 ------------
 
-To come!
+    $ sudo apt-get install subversion build-essential libncurses5-dev zlib1g-dev gawk git ccache gettext libssl-dev xsltproc
+    $ pip install -r requirements.txt
 
 
 Tutorial

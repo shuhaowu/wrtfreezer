@@ -1,3 +1,4 @@
-out/
 wrtfreezer.conf.json
+workdir/
+*.pyc
 
