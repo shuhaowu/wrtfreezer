@@ -37,8 +37,11 @@ class WrtBuilder(object):
     if not self.args.yes:
       self._prompt_for_build_confirmation()
 
-    for name, device in self._devices:
+    for name, device in self._devices.iteritems():
       device.build_image()
+
+  def clean(self):
+    pass
 
   def _get_global_config(self):
     global_config_path = os.path.join(self.args.devices_dir, "config.json")
@@ -50,7 +53,7 @@ class WrtBuilder(object):
 
     return config
 
-  def _discovery_devices_from_directory(self):
+  def _discover_devices_from_directory(self):
     self.logger.debug("discovering devices from directory")
     devices = {}
     for fn in os.listdir(self.args.devices_dir):
@@ -114,8 +117,8 @@ class WrtBuilder(object):
         self.logger.debug("{} image generator is up to date, skipping download".format(device.device_type))
         return False
 
-    url_primary = "https://downloads.openwrt.org/{}/{}/{}/{}/{}".format(device["release"], device["version"], device["arch"], device["type"], filename)
-    url_fallback = "https://downloads.openwrt.org/{}/{}/{}/{}/".format(device["release"], device["version"], device["arch"], device["type"], filename_fallback)
+    url_primary = "https://downloads.openwrt.org/{}/{}/{}/{}/{}".format(device.release, device.version, device.arch, device.type, filename)
+    url_fallback = "https://downloads.openwrt.org/{}/{}/{}/{}/".format(device.release, device.version, device.arch, device.type, filename_fallback)
 
     self.logger.debug("downloading image generator...")
     r = requests.get(url_primary)
@@ -138,7 +141,7 @@ class WrtBuilder(object):
       raise RuntimeError("validation of download for {} failed: expected {}, got {}".format(device.device_type, md5sums, downloaded_md5))
 
     self.logger.debug("{} image generator verified, untarring...".format(device.device_type))
-    with cd(self.target_directory):
+    with cd(builder_dir):
       subprocess.check_call(["tar", "-xjf", BUILDER_FILENAME])
 
       for path in os.listdir("."):
@@ -174,7 +177,7 @@ src imagebuilder file:packages
 
   def _prompt_for_build_confirmation(self):
     print("building for the following devices, please confirm: ")
-    for name, device in self._devices:
+    for name, device in self._devices.iteritems():
       print("  - {} at {} ({})".format(device.device_name, name, device.device_type))
 
     print("")
