@@ -1,3 +1,3 @@
 from __future__ import absolute_import
 
-from .image import Image
+from .wrt_builder import WrtBuilder

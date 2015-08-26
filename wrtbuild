@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+from __future__ import absolute_import, print_function
+
+import argparse
+import os
+import os.path
+import sys
+
+from wrtfreezer import WrtBuilder
+
+
+def try_parse_arguments():
+  parser = argparse.ArgumentParser(description="mass build OpenWRT images via the OpenWRT Image Generator")
+  parser.add_argument("--exclude-devices", nargs="*", default=None, help="exclude devices from being built")
+  parser.add_argument("-y", "--yes", action="store_true", help="do not prompt for confirmation before building, if specified")
+  parser.add_argument("-j", "--jobs", type=int, help="number of parallel builds (not available yet)")
+  parser.add_argument("devices-dir", nargs="?", default="devices", help="the directory with all the devices")
+  parser.add_argument("out-dir", nargs="?", default="out", help="the build output directory (including temporary files)")
+  args = parser.parse_args()
+  if not os.path.isdir(args.devices_dir):
+    print("error: {} is not a valid directory".format(args.devices_dir), file=sys.stderr)
+    parser.print_help(file=sys.stderr)
+    sys.exit(1)
+
+  return args, parser
+
+
+def main():
+  args, parser = try_parse_arguments()
+  wrt_builder = WrtBuilder(args, parser)
+  wrt_builder.build()
+
+
+if __name__ == "__main__":
+  main()

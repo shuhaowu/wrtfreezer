@@ -1,4 +1,3 @@
-wrtfreezer.conf.json
-workdir/
 *.pyc
+.vagrant
 
