@@ -6,6 +6,7 @@ import os
 import os.path
 import subprocess
 import shutil
+import sys
 
 import requests
 
@@ -22,7 +23,7 @@ class WrtBuilder(object):
     self.args = args
     self.parser = parser
     self.logger = logging.getLogger("wrt_builder")
-    handler = logging.StreamHandler()
+    handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging_formatter)
     self.logger.addHandler(handler)
     self.logger.setLevel(logging.DEBUG)

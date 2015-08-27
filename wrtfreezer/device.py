@@ -3,6 +3,7 @@ from __future__ import absolute_import
 import logging
 import os.path
 import subprocess
+import sys
 
 from .utils import get_targets_dir, get_intermediates_dir, IMAGE_BUILDER_DIR_NAME, cd, logging_formatter
 
@@ -26,7 +27,7 @@ class Device(object):
     self.device_name = self.config["profile"]
 
     self.logger = logging.getLogger(self.device_name)
-    handler = logging.StreamHandler()
+    handler = logging.StreamHandler(sys.stdout)
     handler.setFormatter(logging_formatter)
     self.logger.addHandler(handler)
     self.logger.setLevel(logging.DEBUG)
@@ -62,8 +63,10 @@ class Device(object):
       with cd(target_dir):
         factory_filename = "openwrt-{}-{}-{}-v1-squashfs-factory.bin".format(self.arch, self.type, output_name)
         sysupgrade_filename = "openwrt-{}-{}-{}-v1-squashfs-sysupgrade.bin".format(self.arch, self.type, output_name)
+        md5sums_filename = "md5sums"
         squashfs_factory_path = os.path.join(builder_dir, "bin", self.arch, factory_filename)
         squashfs_sysupgrade_path = os.path.join(builder_dir, "bin", self.arch, sysupgrade_filename)
+        md5sums_path = os.path.join(builder_dir, "bin", self.arch, md5sums_filename)
 
         if os.path.exists(factory_filename):
           os.remove(factory_filename)
@@ -72,9 +75,9 @@ class Device(object):
           os.remove(sysupgrade_filename)
 
         subprocess.check_call(["ln", squashfs_factory_path, factory_filename])
-        subprocess.check_call(["ln", squashfs_sysupgrade_path, squashfs_sysupgrade_path])
+        subprocess.check_call(["ln", squashfs_sysupgrade_path, sysupgrade_filename])
+        subprocess.check_call(["ln", md5sums_path, md5sums_filename])
 
-      self.logger.info("factory: {}".format(squashfs_factory_path))
-      self.logger.info("sysupgrade: {}".format(squashfs_sysupgrade_path))
+      self.logger.info("sysupgrade: {}".format(os.path.join(target_dir, sysupgrade_filename)))
     else:
       self.logger.info("outdir: {}".format(os.path.join(builder_dir, "bin", self.arch)))
