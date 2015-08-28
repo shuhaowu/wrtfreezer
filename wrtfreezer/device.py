@@ -74,6 +74,9 @@ class Device(object):
         if os.path.exists(sysupgrade_filename):
           os.remove(sysupgrade_filename)
 
+        if os.path.exists(md5sums_filename):
+          os.remove(md5sums_filename)
+
         subprocess.check_call(["ln", squashfs_factory_path, factory_filename])
         subprocess.check_call(["ln", squashfs_sysupgrade_path, sysupgrade_filename])
         subprocess.check_call(["ln", md5sums_path, md5sums_filename])
