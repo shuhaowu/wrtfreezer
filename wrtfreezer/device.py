@@ -61,8 +61,12 @@ class Device(object):
         os.mkdir(target_dir, 0755)
 
       with cd(target_dir):
-        factory_filename = "openwrt-{}-{}-{}-v1-squashfs-factory.bin".format(self.arch, self.type, output_name)
-        sysupgrade_filename = "openwrt-{}-{}-{}-v1-squashfs-sysupgrade.bin".format(self.arch, self.type, output_name)
+        if self.version == "15.05":
+          factory_filename = "openwrt-15.05-{}-{}-{}-v1-squashfs-factory.bin".format(self.arch, self.type, output_name)
+          sysupgrade_filename = "openwrt-15.05-{}-{}-{}-v1-squashfs-sysupgrade.bin".format(self.arch, self.type, output_name)
+        else:
+          factory_filename = "openwrt-{}-{}-{}-v1-squashfs-factory.bin".format(self.arch, self.type, output_name)
+          sysupgrade_filename = "openwrt-{}-{}-{}-v1-squashfs-sysupgrade.bin".format(self.arch, self.type, output_name)
         md5sums_filename = "md5sums"
         squashfs_factory_path = os.path.join(builder_dir, "bin", self.arch, factory_filename)
         squashfs_sysupgrade_path = os.path.join(builder_dir, "bin", self.arch, sysupgrade_filename)

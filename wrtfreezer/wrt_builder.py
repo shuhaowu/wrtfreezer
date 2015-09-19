@@ -99,7 +99,19 @@ class WrtBuilder(object):
       self._download_builder(intermediates_device_dir, device)
       self._setup_repositories_conf(intermediates_device_dir, device)
 
+  def _contains(self, l, potential_data):
+    for d in potential_data:
+      if d in l:
+        return True
+
+    return False
+
   def _download_builder(self, builder_dir, device):
+    potential_filenames = [
+      "OpenWrt-ImageBuilder-{}_{}-for-linux-x86_64.tar.bz2".format(device.arch, device.type),
+      "OpenWrt-ImageBuilder-{}-for-linux-x86_64.tar.bz2".format(device.arch),
+      "OpenWrt-ImageBuilder-{}-{}-generic.Linux-x86_64.tar.bz2".format(device.version, device.arch, device.type),
+    ]
     filename = "OpenWrt-ImageBuilder-{}_{}-for-linux-x86_64.tar.bz2".format(device.arch, device.type)
     filename_fallback = "OpenWrt-ImageBuilder-{}-for-linux-x86_64.tar.bz2".format(device.arch)
 
@@ -108,8 +120,11 @@ class WrtBuilder(object):
     if r.status_code != 200:
       raise RuntimeError("cannot get md5sums from openwrt...")
 
-    md5sums = filter(lambda l: filename in l or filename_fallback in l, r.text.strip().split("\n"))
+    md5sums = filter(lambda l: self._contains(l, potential_filenames), r.text.strip().split("\n"))
     md5sums = [line.split(" ")[0].strip() for line in md5sums]
+
+    if len(md5sums) == 0:
+      raise RuntimeError("Looks like OpenWRT changed their image names again, code changes needed.")
 
     # make sure that the file doesn't already exists...
     builder_filename = os.path.join(builder_dir, BUILDER_FILENAME)
@@ -118,15 +133,22 @@ class WrtBuilder(object):
         self.logger.debug("{} image generator is up to date, skipping download".format(device.device_type))
         return False
 
-    url_primary = "https://downloads.openwrt.org/{}/{}/{}/{}/{}".format(device.release, device.version, device.arch, device.type, filename)
-    url_fallback = "https://downloads.openwrt.org/{}/{}/{}/{}/".format(device.release, device.version, device.arch, device.type, filename_fallback)
+    potential_urls = [
+      "https://downloads.openwrt.org/{}/{}/{}/{}/{}".format(device.release, device.version, device.arch, device.type, fn) for fn in potential_filenames
+    ]
 
     self.logger.debug("downloading image generator...")
-    r = requests.get(url_primary)
-    if r.status_code == 404:
-      r = requests.get(url_fallback)
+    found = False
+    for url in potential_urls:
+      self.logger.debug("trying {}".format(url))
+      r = requests.get(url)
       if r.status_code == 404:
-        raise ValueError("cannot find image builder for {}/{}/{}/{}".format(self.release, self.version, self.arch, self.type))
+        continue
+
+      found = True
+
+    if not found:
+      raise RuntimeError("Cannot find OpenWRT Image builder to download")
 
     with open(builder_filename, "wb") as f:
       count = 0
